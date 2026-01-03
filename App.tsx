@@ -141,8 +141,13 @@ const App: React.FC = () => {
     <div className="relative min-h-screen text-slate-200 selection:bg-blue-500/30">
       <SpaceBackground />
 
-      {/* Floating Buy Me a Coffee "Chatbot" Button & Interface */}
-      <div className="fixed bottom-6 right-6 z-[200] flex flex-col items-end gap-4">
+      {/* Draggable Buy Me a Coffee "Chatbot" Button & Interface */}
+      <motion.div
+        drag
+        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+        dragElastic={0.1}
+        className="fixed bottom-6 right-6 z-[200] flex flex-col items-end gap-4 cursor-grab active:cursor-grabbing"
+      >
         <AnimatePresence>
           {showBmcInterface && (
             <motion.div
@@ -180,24 +185,24 @@ const App: React.FC = () => {
         </AnimatePresence>
 
         <div className="flex flex-col items-end gap-3">
-          {/* Hidden script container for data attribute support */}
           <div ref={bmcScriptRef} className="hidden"></div>
 
           <button
             onClick={() => setShowBmcInterface(!showBmcInterface)}
             className="group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
           >
-            <div className="absolute inset-0 bg-amber-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-            <img
-              src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-              alt="Buy Me A Coffee"
-              className="h-[60px] w-[217px] shadow-2xl rounded-2xl border-2 border-black/5 object-contain"
-            />
+            <div className="absolute inset-0 bg-amber-500 blur-2xl opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            <div className="w-16 h-16 bg-[#FFDD00] rounded-2xl flex items-center justify-center shadow-3xl border-2 border-black/10 text-black group-hover:rotate-12 transition-transform overflow-hidden relative">
+              <i className="fa-solid fa-mug-hot text-2xl"></i>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-black flex items-center justify-center rounded-tl-lg scale-0 group-hover:scale-100 transition-transform">
+                <i className="fa-solid fa-up-right-from-square text-[8px] text-white"></i>
+              </div>
+            </div>
             {/* Red dot notification badge style */}
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#020617] animate-pulse"></span>
           </button>
         </div>
-      </div>
+      </motion.div>
 
       <nav className="sticky top-0 z-[80] glass border-b border-white/5 py-3 lg:py-0">
         <div className="max-w-[1920px] w-full mx-auto px-4 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-12 lg:h-24">
@@ -356,12 +361,12 @@ const App: React.FC = () => {
             </header>
 
             {isLoading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-                {[...Array(8)].map((_, i) => <div key={i} className="aspect-[2/3] bg-white/5 rounded-[2.5rem] animate-pulse"></div>)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10 sm:gap-14">
+                {[...Array(6)].map((_, i) => <div key={i} className="aspect-[10/15] bg-white/5 rounded-[3rem] animate-pulse"></div>)}
               </div>
             ) : filteredItems.length > 0 ? (
               <>
-                <motion.div layout className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+                <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10 sm:gap-14">
                   {filteredItems.slice(0, visibleCount).map(anime => (
                     <AnimeCard key={anime.id} anime={anime} onClick={setSelectedAnime} />
                   ))}
