@@ -1,0 +1,5 @@
+{
+  "name": "AniTime - Seasonal Anime Calendar",
+  "description": "A high-performance anime calendar and discovery tool inspired by AnimeSchedule. Browse weekly airings, track countdowns, and get AI-powered seasonal recommendations using Gemini.",
+  "requestFramePermissions": []
+}
