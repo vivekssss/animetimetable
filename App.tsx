@@ -123,7 +123,7 @@ const App: React.FC = () => {
         {list.slice(0, 5).map((anime) => (
           <div key={anime.id} className="flex gap-3 sm:gap-5 group cursor-pointer items-center" onClick={() => setSelectedAnime(anime)}>
             <div className="relative w-10 h-14 sm:w-12 sm:h-16 rounded-lg sm:rounded-xl overflow-hidden border border-white/10 shrink-0">
-              <img src={anime.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <img src={anime.image} alt={anime.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
             </div>
             <div className="flex-1 min-w-0">
               <h5 className="text-xs sm:text-[13px] font-black text-white truncate group-hover:text-blue-500 transition-colors leading-tight">{anime.title}</h5>

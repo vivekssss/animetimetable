@@ -169,6 +169,11 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading }) => {
                     <img
                       src={currentAnime.image}
                       alt={currentAnime.title}
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        // Fallback placeholder image if hotlink fails
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&auto=format&fit=crop&q=80";
+                      }}
                       className="w-full h-full object-cover"
                     />
                     {/* Dark gradient overlay for title legibility */}
