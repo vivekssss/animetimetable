@@ -9,31 +9,31 @@ const FEATURED_ANIME_POSTERS = [
   {
     title: "Solo Leveling",
     tagline: "Arise! System Syncing...",
-    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151807-635p9I022o46.jpg",
+    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151807-it355ZgzquUd.png",
     color: "from-blue-600 via-indigo-600 to-cyan-400"
   },
   {
     title: "Frieren: Beyond Journey's End",
     tagline: "Unlocking Ancient Magic Signals...",
-    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-nC23L9zOfR3f.jpg",
+    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-qQTzQnEJJ3oB.jpg",
     color: "from-sky-500 via-teal-500 to-emerald-400"
   },
   {
     title: "Jujutsu Kaisen",
     tagline: "Expanding Domain Connection...",
-    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127230-22cst057u7r6.jpg",
+    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-LHBAeoZDIsnF.jpg",
     color: "from-purple-600 via-fuchsia-600 to-pink-500"
   },
   {
-    title: "Demon Slayer: Hashira Training",
+    title: "Demon Slayer: Kimetsu no Yaiba",
     tagline: "Breathing Technique: Signal Stream!",
-    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx145135-2B8u2n7n4535.jpg",
+    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-WBsBl0ClmgYL.jpg",
     color: "from-amber-500 via-orange-600 to-red-500"
   },
   {
     title: "Re:Zero - Starting Life in Another World",
     tagline: "Resetting Timeline Timetables...",
-    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx163131-B27UvInPjF6j.jpg",
+    image: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21355-wRVUrGxpvIQQ.jpg",
     color: "from-violet-600 via-purple-600 to-indigo-500"
   }
 ];
