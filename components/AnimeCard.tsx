@@ -19,16 +19,13 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
   }, [anime.rawAiringTime]);
 
   return (
-    <div className="relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+    <div className="relative h-full" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <motion.div
-        layout
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        whileHover={{ y: -12, scale: 1.02 }}
+        whileHover={{ y: -10, scale: 1.02 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         onClick={() => onClick(anime)}
         ref={cardRef}
-        className={`group relative flex flex-col bg-slate-900/40 backdrop-blur-2xl rounded-2xl sm:rounded-[2.5rem] overflow-hidden border transition-all duration-500 cursor-pointer shadow-2xl ${isCurrentlyAiring ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-white/10 hover:border-blue-500/50'}`}
+        className={`group relative flex flex-col bg-slate-900/40 backdrop-blur-2xl rounded-2xl sm:rounded-[2.5rem] overflow-hidden border transition-colors duration-300 cursor-pointer shadow-2xl h-full ${isCurrentlyAiring ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-white/10 hover:border-blue-500/50'}`}
       >
         <div className="relative aspect-[10/15] overflow-hidden">
           <img

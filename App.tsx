@@ -24,12 +24,14 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [searchResults, setSearchResults] = React.useState<Anime[]>([]);
   const [selectedAnime, setSelectedAnime] = React.useState<Anime | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+  const [isWeekLoading, setIsWeekLoading] = React.useState(false);
   const [isSearching, setIsSearching] = React.useState(false);
   const [showFilters, setShowFilters] = React.useState(false);
   const [showBmcInterface, setShowBmcInterface] = React.useState(false);
   const [weekOffset, setWeekOffset] = React.useState(0);
 
+  const isFirstRender = React.useRef(true);
   const seasonInfo = React.useMemo(() => getCurrentSeasonInfo(), []);
   const bmcScriptRef = React.useRef<HTMLDivElement>(null);
 
@@ -54,7 +56,11 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
+      if (isFirstRender.current) {
+        setIsInitialLoading(true);
+      } else {
+        setIsWeekLoading(true);
+      }
       const startTime = Date.now();
       try {
         const scheduleRes = await fetchAllSchedules(weekOffset);
@@ -65,12 +71,14 @@ const App: React.FC = () => {
         setAiringList(MOCK_ANIME_DATA);
       } finally {
         const elapsed = Date.now() - startTime;
-        const minDuration = 1200; // 1.2s screen loader experience
-        if (elapsed < minDuration) {
-          setTimeout(() => setIsLoading(false), minDuration - elapsed);
-        } else {
-          setIsLoading(false);
-        }
+        const minDuration = isFirstRender.current ? 1200 : 200;
+        setTimeout(() => {
+          if (isFirstRender.current) {
+            setIsInitialLoading(false);
+            isFirstRender.current = false;
+          }
+          setIsWeekLoading(false);
+        }, Math.max(0, minDuration - elapsed));
       }
     };
     loadData();
@@ -133,7 +141,7 @@ const App: React.FC = () => {
   return (
     <div className="relative min-h-screen text-slate-200 selection:bg-blue-500/30">
       {/* Modern Animated Screen Loader */}
-      <LoadingScreen isLoading={isLoading} />
+      <LoadingScreen isLoading={isInitialLoading} />
 
       <SpaceBackground />
 
@@ -329,7 +337,10 @@ const App: React.FC = () => {
                     <i className="fa-solid fa-chevron-left text-xs sm:text-base"></i>
                   </button>
                   <div className="text-center">
-                    <p className="text-[9px] sm:text-[10px] font-black text-blue-500 uppercase tracking-widest">Time Sector</p>
+                    <p className="text-[9px] sm:text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center justify-center gap-1.5">
+                      {isWeekLoading && <i className="fa-solid fa-circle-notch animate-spin text-blue-400"></i>}
+                      Time Sector
+                    </p>
                     <h4 className="text-xs sm:text-sm lg:text-lg font-black text-white whitespace-nowrap">
                       {weekOffset === 0 ? 'Current Week' :
                         weekOffset > 0 ? `${weekOffset} Wk${weekOffset > 1 ? 's' : ''} Ahead` :
@@ -416,23 +427,44 @@ const App: React.FC = () => {
               </AnimatePresence>
             </header>
 
-            {isLoading ? (
+            {isInitialLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-10 xl:gap-12">
                 {[...Array(6)].map((_, i) => <div key={i} className="aspect-[10/15] bg-white/5 rounded-2xl sm:rounded-[3rem] animate-pulse"></div>)}
               </div>
             ) : filteredItems.length > 0 ? (
-              <>
-                <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-10 xl:gap-12">
-                  {filteredItems.map(anime => (
-                    <AnimeCard key={anime.id} anime={anime} onClick={setSelectedAnime} />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${selectedDay}-${viewMode}-${selectedGenre}-${weekOffset}`}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-10 xl:gap-12"
+                >
+                  {filteredItems.map((anime, index) => (
+                    <motion.div
+                      key={`${anime.id}-${index}`}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+                      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.3), ease: [0.25, 0.1, 0.25, 1.0] }}
+                      layout
+                    >
+                      <AnimeCard anime={anime} onClick={setSelectedAnime} />
+                    </motion.div>
                   ))}
                 </motion.div>
-              </>
+              </AnimatePresence>
             ) : (
-              <div className="py-24 sm:py-40 flex flex-col items-center justify-center bg-white/[0.01] rounded-2xl sm:rounded-[3rem] border border-dashed border-white/10 p-6 text-center">
+              <motion.div
+                key={`empty-${selectedDay}-${viewMode}`}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-24 sm:py-40 flex flex-col items-center justify-center bg-white/[0.01] rounded-2xl sm:rounded-[3rem] border border-dashed border-white/10 p-6 text-center"
+              >
                 <i className="fa-solid fa-satellite-dish text-3xl sm:text-4xl text-slate-800 mb-4 sm:mb-8"></i>
                 <p className="text-slate-500 font-black uppercase tracking-widest text-[10px] sm:text-[11px]">No active signals for this sector.</p>
-              </div>
+              </motion.div>
             )}
           </section>
 
