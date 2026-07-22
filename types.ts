@@ -14,6 +14,12 @@ export interface Anime {
   score: number;
   studio: string;
   isUpcoming?: boolean;
+  format?: string;
+  status?: string;
+  duration?: number;
+  synonyms?: string[];
+  startDate?: string;
+  endDate?: string;
   trailer?: {
     id: string;
     site: string;

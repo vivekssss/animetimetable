@@ -29,12 +29,18 @@ const cleanDescription = (html: string) => {
 
 const MEDIA_FIELDS = `
   id
-  title { english romaji }
+  title { english romaji native }
   coverImage { extraLarge large }
   bannerImage
   genres
   description
   averageScore
+  format
+  status
+  duration
+  synonyms
+  startDate { year month day }
+  endDate { year month day }
   trailer { id site }
   externalLinks { site url }
   studios(isMain: true) { nodes { name } }
@@ -48,10 +54,16 @@ const MEDIA_FIELDS = `
   }
 `;
 
+const formatDate = (dateObj: any) => {
+  if (!dateObj || !dateObj.year) return 'TBA';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[dateObj.month - 1]} ${dateObj.day}, ${dateObj.year}`;
+};
+
 const transformMedia = (m: any, airingAt?: number, ep?: number): Anime => ({
   id: `${m.id}-${airingAt || 0}-${ep || 0}`,
   anilistId: m.id,
-  title: m.title.english || m.title.romaji,
+  title: m.title.english || m.title.romaji || m.title.native,
   image: m.coverImage.extraLarge || m.coverImage.large,
   banner: m.bannerImage,
   airingDay: airingAt ? new Date(airingAt * 1000).getDay() : 0,
@@ -62,6 +74,12 @@ const transformMedia = (m: any, airingAt?: number, ep?: number): Anime => ({
   episode: ep || 0,
   score: m.averageScore ? m.averageScore / 10 : 0,
   studio: m.studios?.nodes?.[0]?.name || 'Unknown',
+  format: m.format,
+  status: m.status,
+  duration: m.duration,
+  synonyms: m.synonyms,
+  startDate: formatDate(m.startDate),
+  endDate: formatDate(m.endDate),
   trailer: m.trailer,
   externalLinks: m.externalLinks,
   relations: m.relations?.nodes?.map((n: any) => ({
@@ -76,11 +94,13 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
   const now = Math.floor(Date.now() / 1000);
   const oneWeek = 60 * 60 * 24 * 7;
 
+  // Calculate start of week (Sunday)
   const d = new Date();
-  d.setDate(d.getDate() + (weekOffset * 7)); // Apply week offset
+  d.setDate(d.getDate() + (weekOffset * 7));
   const day = d.getDay();
   const diff = d.getDate() - day;
-  const startOfWeekDate = new Date(d.setDate(diff));
+  const startOfWeekDate = new Date(d);
+  startOfWeekDate.setDate(diff);
   startOfWeekDate.setHours(0, 0, 0, 0);
   const startOfWeek = Math.floor(startOfWeekDate.getTime() / 1000);
 
@@ -88,7 +108,21 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
 
   const query = `
     query ($airingStart: Int, $airingEnd: Int, $upcomingSeason: MediaSeason, $upcomingYear: Int, $pastStart: Int, $pastEnd: Int) {
-      airing: Page(page: 1, perPage: 100) {
+      airing: Page(page: 1, perPage: 50) {
+        airingSchedules(airingAt_greater: $airingStart, airingAt_lesser: $airingEnd, sort: TIME) {
+          airingAt
+          episode
+          media { ${MEDIA_FIELDS} }
+        }
+      }
+      airing2: Page(page: 2, perPage: 50) {
+        airingSchedules(airingAt_greater: $airingStart, airingAt_lesser: $airingEnd, sort: TIME) {
+          airingAt
+          episode
+          media { ${MEDIA_FIELDS} }
+        }
+      }
+      airing3: Page(page: 3, perPage: 50) {
         airingSchedules(airingAt_greater: $airingStart, airingAt_lesser: $airingEnd, sort: TIME) {
           airingAt
           episode
@@ -131,8 +165,14 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
     if (json.errors || !json.data) throw new Error(json.errors?.[0]?.message || "API Error");
 
     const { data } = json;
+    const combinedAiring = [
+      ...(data.airing?.airingSchedules || []),
+      ...(data.airing2?.airingSchedules || []),
+      ...(data.airing3?.airingSchedules || [])
+    ];
+
     return {
-      currentData: data.airing?.airingSchedules?.map((s: any) => transformMedia(s.media, s.airingAt, s.episode)) || [],
+      currentData: combinedAiring.map((s: any) => transformMedia(s.media, s.airingAt, s.episode)) || [],
       upcomingData: data.upcoming?.media?.map((m: any) => transformMedia(m)) || [],
       pastData: data.past?.airingSchedules?.map((s: any) => transformMedia(s.media, s.airingAt, s.episode)) || []
     };
