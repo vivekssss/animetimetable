@@ -177,7 +177,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-[80px] left-2 right-2 sm:left-6 sm:right-auto sm:bottom-24 w-auto sm:w-[400px] h-[calc(100vh-100px)] max-h-[540px] sm:h-[560px] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col z-[280]"
+            className="fixed bottom-[80px] left-3 right-3 sm:left-6 sm:right-auto sm:bottom-24 w-auto sm:w-[400px] h-[calc(100vh-100px)] max-h-[540px] sm:h-[560px] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col z-[300]"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-slate-900 border-b border-white/10 p-3 sm:p-4 flex items-center justify-between shrink-0">
@@ -326,17 +326,16 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
         )}
       </AnimatePresence>
 
-      {/* Floating Trigger Button (High Visibility Pill Button) */}
+      {/* Floating Trigger Button (Floating Square Button Opposite to Support AniFlow) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[280] group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
         title="Open AniFlow Assistant"
       >
-        <div className="absolute inset-0 bg-blue-600 blur-xl opacity-60 group-hover:opacity-90 transition-opacity"></div>
-        <div className="h-12 px-3.5 sm:h-14 sm:px-5 bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 rounded-2xl flex items-center gap-2.5 shadow-2xl border-2 border-white/20 text-white group-hover:scale-105 transition-transform overflow-hidden relative">
-          <i className={`fa-solid ${isOpen ? 'fa-xmark' : 'fa-comments'} text-base sm:text-xl`}></i>
-          <span className="text-xs sm:text-sm font-black tracking-wide uppercase">Assistant</span>
-          <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse border border-slate-900"></span>
+        <div className="absolute inset-0 bg-blue-600 blur-2xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
+        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-3xl border-2 border-white/20 text-white group-hover:rotate-6 transition-transform overflow-hidden relative">
+          <i className={`fa-solid ${isOpen ? 'fa-xmark' : 'fa-comments'} text-xl sm:text-2xl`}></i>
+          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#020617] animate-pulse"></span>
         </div>
       </button>
     </>
