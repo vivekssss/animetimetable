@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
   const [isWeekLoading, setIsWeekLoading] = React.useState(false);
   const [isSearching, setIsSearching] = React.useState(false);
+  const [isFiltering, setIsFiltering] = React.useState(false);
   const [showFilters, setShowFilters] = React.useState(false);
   const [showBmcInterface, setShowBmcInterface] = React.useState(false);
   const [weekOffset, setWeekOffset] = React.useState(0);
@@ -224,7 +225,12 @@ const App: React.FC = () => {
               {['airing', 'upcoming'].map((mode) => (
                 <button
                   key={mode}
-                  onClick={() => { setViewMode(mode as any); setVisibleCount(12); }}
+                  onClick={() => {
+                    setIsFiltering(true);
+                    setViewMode(mode as any);
+                    setVisibleCount(12);
+                    setTimeout(() => setIsFiltering(false), 400);
+                  }}
                   className={`px-2.5 sm:px-4 lg:px-8 py-1.5 sm:py-2 rounded-lg lg:rounded-xl text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase tracking-[0.08em] sm:tracking-[0.1em] transition-all ${viewMode === mode ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}
                 >
                   {mode === 'airing' ? 'Broadcast' : 'Upcoming'}
@@ -382,7 +388,11 @@ const App: React.FC = () => {
                       return (
                         <button
                           key={day}
-                          onClick={() => { setSelectedDay(index); }}
+                          onClick={() => {
+                            setIsFiltering(true);
+                            setSelectedDay(index);
+                            setTimeout(() => setIsFiltering(false), 300);
+                          }}
                           className={`py-2 sm:py-2.5 px-0.5 sm:px-5 rounded-lg sm:rounded-xl font-black text-center transition-all relative flex flex-col items-center justify-center shrink-0 sm:shrink ${selectedDay === index
                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 scale-[1.03]'
                             : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
@@ -410,7 +420,11 @@ const App: React.FC = () => {
                           {ALL_GENRES.map(genre => (
                             <button
                               key={genre}
-                              onClick={() => { setSelectedGenre(genre); }}
+                              onClick={() => {
+                                setIsFiltering(true);
+                                setSelectedGenre(genre);
+                                setTimeout(() => setIsFiltering(false), 300);
+                              }}
                               className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all border ${selectedGenre === genre
                                 ? 'bg-white text-blue-900 border-white shadow-xl'
                                 : 'bg-transparent border-white/10 text-slate-500 hover:text-white hover:border-white/30'
@@ -427,9 +441,15 @@ const App: React.FC = () => {
               </AnimatePresence>
             </header>
 
-            {isInitialLoading ? (
+            {(isInitialLoading || isFiltering || isWeekLoading) ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
-                {[...Array(8)].map((_, i) => <div key={i} className="aspect-[10/14] bg-white/5 rounded-2xl sm:rounded-[1.5rem] animate-pulse"></div>)}
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="flex flex-col gap-4">
+                    <div className="aspect-[10/14] bg-white/5 rounded-2xl sm:rounded-[1.5rem] animate-pulse"></div>
+                    <div className="h-4 w-3/4 bg-white/5 rounded animate-pulse"></div>
+                    <div className="h-3 w-1/2 bg-white/5 rounded animate-pulse"></div>
+                  </div>
+                ))}
               </div>
             ) : filteredItems.length > 0 ? (
               <AnimatePresence mode="wait">
