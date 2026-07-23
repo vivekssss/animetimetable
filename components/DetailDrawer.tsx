@@ -65,8 +65,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClos
             initial={{ x: '100%', y: 0 }}
             animate={{ x: 0, y: 0 }}
             exit={{ x: '100%', y: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="relative w-full sm:w-[85%] lg:w-[70%] xl:w-[60%] h-full bg-[#020617] sm:border-l border-white/10 shadow-2xl flex flex-col z-[310] overflow-hidden"
+            transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+            className="relative w-full sm:w-[500px] md:w-[600px] lg:w-[800px] xl:w-[950px] 2xl:w-[1100px] h-full bg-[#020617] sm:border-l border-white/10 shadow-2xl flex flex-col z-[310] overflow-hidden"
           >
             {/* Drawer / Popup Header */}
             <div className="flex items-center justify-between px-3.5 sm:px-8 py-3 sm:py-4 border-b border-white/10 shrink-0 bg-[#020617]/95 backdrop-blur-md sticky top-0 z-50">
@@ -140,18 +140,18 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClos
                     ))}
                   </div>
 
-                  <div className="p-4 sm:p-8 lg:p-12 pb-24 sm:pb-32">
+                  <div className="p-4 sm:p-8 lg:p-10 pb-24 sm:pb-32">
                     {activeTab === 'info' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                        <div className="lg:col-span-8 space-y-8 sm:space-y-12">
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+                        <div className="xl:col-span-8 space-y-8 sm:space-y-12">
                           <section>
                             <h3 className="text-blue-500 font-black text-[10px] uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-3"><span className="w-6 sm:w-8 h-px bg-blue-500/30"></span> Synopsis</h3>
-                            <p className="text-slate-300 text-sm sm:text-lg lg:text-xl leading-relaxed font-light">{anime.description}</p>
+                            <p className="text-slate-300 text-sm sm:text-base lg:text-lg leading-relaxed font-light">{anime.description}</p>
                           </section>
                           {anime.relations && anime.relations.length > 0 && (
                             <section>
                               <h3 className="text-blue-500 font-black text-[10px] uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-3"><span className="w-6 sm:w-8 h-px bg-blue-500/30"></span> Connections</h3>
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
                                 {anime.relations.map(rel => (
                                   <div key={rel.id} className="group cursor-pointer" onClick={() => handleConnectionClick(rel.id)}>
                                     <div className="aspect-[2/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 relative mb-2 sm:mb-3 bg-slate-900">
@@ -168,15 +168,15 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClos
                             </section>
                           )}
                         </div>
-                        <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-                          <div className="bg-white/[0.03] border border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-4 sm:space-y-6">
+                        <div className="xl:col-span-4 space-y-6 sm:space-y-8">
+                          <div className="bg-white/[0.03] border border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-4 sm:space-y-6 sticky top-24">
                             <div className="flex justify-between items-center pb-3 sm:pb-4 border-b border-white/5">
                               <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Studio</span>
-                              <span className="text-xs font-bold text-white">{anime.studio}</span>
+                              <span className="text-xs font-bold text-white text-right ml-2">{anime.studio}</span>
                             </div>
                             <div className="flex justify-between items-center pb-3 sm:pb-4 border-b border-white/5">
                               <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Airing</span>
-                              <span className="text-xs font-bold text-blue-400">{anime.airingTime}</span>
+                              <span className="text-xs font-bold text-blue-400 text-right ml-2">{anime.airingTime}</span>
                             </div>
                             <div className="space-y-2.5 sm:space-y-3 pt-2 sm:pt-4">
                               <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Genre Pulse</p>

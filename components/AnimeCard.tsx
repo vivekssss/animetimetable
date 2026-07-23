@@ -84,25 +84,28 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
           <motion.div
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.95 }}
-            className="absolute left-full top-0 ml-4 w-[320px] z-[150] pointer-events-none hidden xl:block"
+            exit={{ opacity: 0, x: 20, scale: 0.95, transition: { duration: 0.2, delay: 0.1 } }}
+            className="absolute left-full top-0 ml-4 w-[320px] z-[150] pointer-events-auto hidden xl:block"
           >
-            <div className="bg-[#1a1c23] border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
-              <h4 className="text-purple-400 font-bold text-lg mb-3">{anime.title}</h4>
+            <div className="bg-[#1a1c23] border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative">
+              {/* Invisible bridge to allow mouse to move from card to tooltip across the gap */}
+              <div className="absolute -left-4 top-0 bottom-0 w-4 pointer-events-auto" />
+              
+              <h4 className="text-purple-400 font-bold text-lg mb-3 selection:bg-purple-500/30">{anime.title}</h4>
               
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase">{anime.format || 'TV'}</span>
-                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase">HD</span>
-                {anime.episode > 0 && <span className="bg-purple-500/20 text-purple-400 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1"><i className="fa-solid fa-closed-captioning"></i> {anime.episode}</span>}
-                <span className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1"><i className="fa-solid fa-microphone"></i> 5</span>
-                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase">12</span>
+                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase selection:bg-white/20">{anime.format || 'TV'}</span>
+                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase selection:bg-white/20">HD</span>
+                {anime.episode > 0 && <span className="bg-purple-500/20 text-purple-400 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1 selection:bg-purple-500/30"><i className="fa-solid fa-closed-captioning"></i> {anime.episode}</span>}
+                <span className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1 selection:bg-amber-500/30"><i className="fa-solid fa-microphone"></i> 5</span>
+                <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded text-white font-bold uppercase selection:bg-white/20">12</span>
               </div>
 
-              <p className="text-slate-400 text-[12px] leading-relaxed mb-6 line-clamp-4">
+              <p className="text-slate-400 text-[12px] leading-relaxed mb-6 line-clamp-4 selection:bg-slate-500/30">
                 {anime.description}
               </p>
 
-              <div className="space-y-2 text-[11px]">
+              <div className="space-y-2 text-[11px] selection:bg-blue-500/20">
                 <div className="flex gap-2">
                   <span className="text-slate-500 shrink-0">Other names:</span>
                   <span className="text-slate-300 truncate">{anime.synonyms?.join(', ') || 'N/A'}</span>
