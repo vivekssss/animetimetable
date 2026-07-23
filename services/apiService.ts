@@ -8,23 +8,29 @@ export const getCurrentSeasonInfo = () => {
   const now = new Date();
   const month = now.getMonth();
   const year = now.getFullYear();
-  let seasonIndex = 0;
-  if (month >= 0 && month <= 2) seasonIndex = 0;
-  else if (month >= 3 && month <= 5) seasonIndex = 1;
-  else if (month >= 6 && month <= 8) seasonIndex = 2;
-  else seasonIndex = 3;
-
+  
+  // 0: WINTER (Jan-Mar), 1: SPRING (Apr-Jun), 2: SUMMER (Jul-Sep), 3: FALL (Oct-Dec)
+  const seasonIndex = Math.floor(month / 3);
   const nextSeasonIndex = (seasonIndex + 1) % 4;
-  const nextMonthName = new Date(year, month + 1, 1).toLocaleString('default', { month: 'long' });
+  const nextSeasonYear = nextSeasonIndex === 0 ? year + 1 : year;
+
+  const nextMonthDate = new Date(year, month + 1, 1);
+  const nextMonthName = nextMonthDate.toLocaleString('default', { month: 'long' });
 
   return {
     current: { season: SEASONS[seasonIndex], year },
-    upcoming: { season: SEASONS[nextSeasonIndex], year: nextSeasonIndex === 0 ? year + 1 : year, monthName: nextMonthName }
+    upcoming: { 
+      season: SEASONS[nextSeasonIndex], 
+      year: nextSeasonYear, 
+      monthName: nextMonthName,
+      seasonName: SEASONS[nextSeasonIndex]
+    }
   };
 };
 
 const cleanDescription = (html: string) => {
-  return html ? html.replace(/<[^>]*>?/gm, '').trim() : 'No description available.';
+  if (!html) return 'No description available.';
+  return html.replace(/<[^>]*>?/gm, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
 };
 
 const MEDIA_FIELDS = `
@@ -82,6 +88,7 @@ const transformMedia = (m: any, airingAt?: number, ep?: number): Anime => ({
   endDate: formatDate(m.endDate),
   trailer: m.trailer,
   externalLinks: m.externalLinks,
+  isUpcoming: m.status === 'NOT_YET_RELEASED',
   relations: m.relations?.nodes?.map((n: any) => ({
     id: n.id,
     title: n.title.english || n.title.romaji,
@@ -94,7 +101,6 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
   const now = Math.floor(Date.now() / 1000);
   const oneWeek = 60 * 60 * 24 * 7;
 
-  // Calculate start of week (Sunday)
   const d = new Date();
   d.setDate(d.getDate() + (weekOffset * 7));
   const day = d.getDay();
@@ -137,6 +143,11 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
         }
       }
       upcoming: Page(page: 1, perPage: 80) {
+        media(status: NOT_YET_RELEASED, sort: TRENDING_DESC, type: ANIME) {
+           ${MEDIA_FIELDS}
+        }
+      }
+      seasonal: Page(page: 1, perPage: 80) {
         media(season: $upcomingSeason, seasonYear: $upcomingYear, status: NOT_YET_RELEASED, sort: POPULARITY_DESC, type: ANIME) {
            ${MEDIA_FIELDS}
         }
@@ -162,7 +173,11 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
     });
 
     const json = await response.json();
-    if (json.errors || !json.data) throw new Error(json.errors?.[0]?.message || "API Error");
+    if (json.errors) {
+      console.warn("Anilist API partial errors:", json.errors);
+    }
+    
+    if (!json.data) throw new Error("API Error: No data returned");
 
     const { data } = json;
     const combinedAiring = [
@@ -171,9 +186,12 @@ export const fetchAllSchedules = async (weekOffset: number = 0) => {
       ...(data.airing3?.airingSchedules || [])
     ];
 
+    // Prefer seasonal data if available, otherwise fallback to general upcoming
+    const rawUpcoming = (data.seasonal?.media?.length > 0) ? data.seasonal.media : (data.upcoming?.media || []);
+
     return {
       currentData: combinedAiring.map((s: any) => transformMedia(s.media, s.airingAt, s.episode)) || [],
-      upcomingData: data.upcoming?.media?.map((m: any) => transformMedia(m)) || [],
+      upcomingData: rawUpcoming.map((m: any) => transformMedia(m)) || [],
       pastData: data.past?.airingSchedules?.map((s: any) => transformMedia(s.media, s.airingAt, s.episode)) || []
     };
   } catch (err) {

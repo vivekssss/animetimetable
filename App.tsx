@@ -65,11 +65,14 @@ const App: React.FC = () => {
       const startTime = Date.now();
       try {
         const scheduleRes = await fetchAllSchedules(weekOffset);
-        setAiringList(scheduleRes.currentData);
-        setUpcomingList(scheduleRes.upcomingData);
-        setPastList(scheduleRes.pastData);
+        setAiringList(scheduleRes.currentData || []);
+        setUpcomingList(scheduleRes.upcomingData || []);
+        setPastList(scheduleRes.pastData || []);
       } catch (err) {
+        console.error("Failed to load anime data:", err);
         setAiringList(MOCK_ANIME_DATA);
+        setUpcomingList([]);
+        setPastList([]);
       } finally {
         const elapsed = Date.now() - startTime;
         const minDuration = isFirstRender.current ? 1200 : 200;
@@ -228,7 +231,6 @@ const App: React.FC = () => {
                   onClick={() => {
                     setIsFiltering(true);
                     setViewMode(mode as any);
-                    setVisibleCount(12);
                     setTimeout(() => setIsFiltering(false), 400);
                   }}
                   className={`px-2.5 sm:px-4 lg:px-8 py-1.5 sm:py-2 rounded-lg lg:rounded-xl text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase tracking-[0.08em] sm:tracking-[0.1em] transition-all ${viewMode === mode ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}
@@ -318,7 +320,7 @@ const App: React.FC = () => {
                 <div>
                   <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] mb-3 sm:mb-4">
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-                    {viewMode === 'airing' ? `TIMETABLE ACTIVE ${seasonInfo.current.year}` : `SEASONAL FORECAST ${seasonInfo.upcoming.monthName.toUpperCase()}`}
+                    {viewMode === 'airing' ? `TIMETABLE ACTIVE ${seasonInfo.current.year}` : `SEASONAL FORECAST ${seasonInfo.upcoming.seasonName} ${seasonInfo.upcoming.year}`}
                   </div>
                   <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black font-outfit text-white tracking-tighter leading-none">
                     {viewMode === 'airing' ? 'Weekly' : 'Seasonal'} <span className="text-blue-600">Schedule.</span>
