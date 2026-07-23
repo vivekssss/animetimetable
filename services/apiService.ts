@@ -198,19 +198,45 @@ export const fetchAnimeById = async (id: number): Promise<Anime | null> => {
   }
 };
 
-export const searchAnime = async (query: string): Promise<Anime[]> => {
+export const searchAnime = async (query?: string, genre?: string, sort: string = "POPULARITY_DESC"): Promise<Anime[]> => {
   try {
+    const variables: any = {};
+    const queryArgs: string[] = [];
+
+    if (query && query.trim()) {
+      variables.q = query.trim();
+      queryArgs.push("search: $q");
+    }
+    if (genre && genre.trim()) {
+      variables.genre = genre.trim();
+      queryArgs.push("genre: $genre");
+    }
+    if (sort) {
+      variables.sort = [sort];
+      queryArgs.push("sort: $sort");
+    }
+
+    const argsString = queryArgs.length > 0 ? `(${queryArgs.join(", ")}, type: ANIME)` : `(type: ANIME)`;
+    const varDefs: string[] = [];
+    if (variables.q) varDefs.push("$q: String");
+    if (variables.genre) varDefs.push("$genre: String");
+    if (variables.sort) varDefs.push("$sort: [MediaSort]");
+    const varDefString = varDefs.length > 0 ? `(${varDefs.join(", ")})` : "";
+
+    const gqlQuery = `query ${varDefString} { Page(perPage: 12) { media${argsString} { ${MEDIA_FIELDS} } } }`;
+
     const response = await fetch(ANILIST_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        query: `query ($q: String) { Page(perPage: 12) { media(search: $q, type: ANIME) { ${MEDIA_FIELDS} } } }`,
-        variables: { q: query }
+        query: gqlQuery,
+        variables
       })
     });
     const json = await response.json();
     return json.data?.Page?.media?.map((m: any) => transformMedia(m)) || [];
   } catch (err) {
+    console.error("searchAnime error:", err);
     return [];
   }
 };

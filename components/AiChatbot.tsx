@@ -19,7 +19,14 @@ interface AiChatbotProps {
 const QUICK_PROMPTS = [
   "What's airing today?",
   "Search Solo Leveling",
-  "Top rated action shows"
+  "Top rated action shows",
+  "Top romance anime"
+];
+
+const ANIME_GENRES = [
+  "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mahou Shoujo",
+  "Mecha", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi", "Slice of Life",
+  "Sports", "Supernatural", "Thriller"
 ];
 
 const DAYS_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -90,25 +97,52 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
           responseText = `Here are today's scheduled broadcasts from AniList:`;
           foundAnime = currentSchedule.slice(0, 6);
         } else {
-          const apiResults = await searchAnime("2026");
+          const apiResults = await searchAnime(undefined, undefined, "SCORE_DESC");
           responseText = `Top current releases on AniList:`;
           foundAnime = apiResults.slice(0, 6);
         }
-      } else if (lower.includes("top") || lower.includes("popular") || lower.includes("rated")) {
-        const apiResults = await searchAnime(text.replace(/top|popular|rated|shows|anime/g, '').trim() || "2026");
-        foundAnime = apiResults.sort((a, b) => b.score - a.score).slice(0, 6);
-        responseText = foundAnime.length > 0
-          ? `Top rated anime results from AniList database:`
-          : `Couldn't find top matches. Try searching a specific genre or title!`;
       } else {
-        // Direct title / keyword search via AniList API
-        const cleanQuery = text.replace(/^search\s+/i, '');
-        const apiResults = await searchAnime(cleanQuery);
+        // Detect if user is asking for a specific genre
+        let matchedGenre: string | undefined = undefined;
+        for (const g of ANIME_GENRES) {
+          if (lower.includes(g.toLowerCase())) {
+            matchedGenre = g;
+            break;
+          }
+        }
+
+        // Determine sort order
+        let sortMode = "POPULARITY_DESC";
+        if (lower.includes("top") || lower.includes("best") || lower.includes("rated") || lower.includes("highest")) {
+          sortMode = "SCORE_DESC";
+        } else if (lower.includes("trending")) {
+          sortMode = "TRENDING_DESC";
+        }
+
+        // Clean query string for title search
+        let cleanQuery = text
+          .replace(/^search\s+/i, '')
+          .replace(/top|best|rated|highest|popular|shows|anime|show/gi, '')
+          .trim();
+
+        if (matchedGenre) {
+          cleanQuery = cleanQuery.replace(new RegExp(matchedGenre, 'gi'), '').trim();
+        }
+
+        const queryArg = cleanQuery.length > 1 ? cleanQuery : undefined;
+        const apiResults = await searchAnime(queryArg, matchedGenre, sortMode);
+
         if (apiResults && apiResults.length > 0) {
-          responseText = `Found ${apiResults.length} matching anime from AniList for "${cleanQuery}":`;
+          if (matchedGenre) {
+            responseText = `Top ${sortMode === 'SCORE_DESC' ? 'rated' : 'popular'} ${matchedGenre} anime from AniList database:`;
+          } else if (queryArg) {
+            responseText = `Found ${apiResults.length} matching anime for "${queryArg}":`;
+          } else {
+            responseText = `Top rated anime results from AniList database:`;
+          }
           foundAnime = apiResults.slice(0, 8);
         } else {
-          responseText = `No matching anime found for "${cleanQuery}". Try checking the spelling or typing a broader keyword!`;
+          responseText = `No matching anime found for "${text}". Try checking spelling or searching a broader category!`;
         }
       }
 
@@ -136,14 +170,14 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
   };
 
   return (
-    <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[200] flex flex-col items-start gap-3 max-w-[calc(100vw-2rem)]">
+    <>
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-[calc(100vw-2rem)] sm:w-[390px] h-[480px] sm:h-[540px] max-h-[85vh] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col relative"
+            className="fixed bottom-[80px] left-3 right-3 sm:left-6 sm:right-auto sm:bottom-24 w-auto sm:w-[390px] h-[calc(100vh-100px)] max-h-[520px] sm:h-[540px] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col z-[200]"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-slate-900 border-b border-white/10 p-3 sm:p-4 flex items-center justify-between shrink-0">
@@ -178,24 +212,24 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 custom-scrollbar bg-slate-950/40">
+            <div className="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto overscroll-contain touch-pan-y space-y-3.5 custom-scrollbar bg-slate-950/40">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`max-w-[92%] sm:max-w-[88%] rounded-2xl p-3 text-xs sm:text-[13px] leading-relaxed ${
+                    className={`max-w-[92%] sm:max-w-[88%] rounded-2xl p-3 text-xs sm:text-[13px] leading-relaxed break-words whitespace-pre-wrap ${
                       msg.sender === 'user'
                         ? 'bg-blue-600 text-white font-medium rounded-tr-none shadow-lg shadow-blue-600/20'
                         : 'bg-slate-800/90 text-slate-100 border border-slate-700/80 rounded-tl-none font-normal shadow-md'
                     }`}
                   >
-                    <p className="mb-2">{msg.text}</p>
+                    <p className="mb-2 leading-snug">{msg.text}</p>
 
                     {/* Render Anime Cards inside Bot Response */}
                     {msg.results && msg.results.length > 0 && (
-                      <div className="mt-2 space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
+                      <div className="mt-2 space-y-2 max-h-[200px] overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar pr-1">
                         {msg.results.map((anime) => (
                           <div
                             key={anime.id}
@@ -205,6 +239,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
                             <img
                               src={anime.image}
                               alt={anime.title}
+                              referrerPolicy="no-referrer"
                               className="w-10 h-14 rounded-lg object-cover shrink-0 border border-slate-700"
                             />
                             <div className="flex-1 min-w-0">
@@ -250,12 +285,12 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
 
             {/* Quick Prompt Chips */}
             {messages.length <= 2 && !isLoading && (
-              <div className="px-3 pt-2 pb-1 bg-slate-900/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 border-t border-slate-800">
+              <div className="px-3 pt-2 pb-1.5 bg-slate-900/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 border-t border-slate-800/80">
                 {QUICK_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => handleSend(prompt)}
-                    className="px-2.5 py-1 bg-blue-950/60 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white rounded-lg text-[9px] font-bold tracking-tight whitespace-nowrap transition-all"
+                    className="px-2.5 py-1 bg-blue-950/60 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white rounded-lg text-[9px] sm:text-[10px] font-bold tracking-tight whitespace-nowrap transition-all shrink-0 active:scale-95"
                   >
                     {prompt}
                   </button>
@@ -273,7 +308,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
             >
               <input
                 type="text"
-                placeholder="Type anime name or query..."
+                placeholder="Type anime name, genre, or 'top rated'..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isLoading}
@@ -282,7 +317,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
               <button
                 type="submit"
                 disabled={!inputText.trim() || isLoading}
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-xl flex items-center justify-center transition-all shrink-0 shadow-lg shadow-blue-600/20"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-xl flex items-center justify-center transition-all shrink-0 shadow-lg shadow-blue-600/20 active:scale-95"
               >
                 <i className="fa-solid fa-paper-plane text-xs sm:text-sm"></i>
               </button>
@@ -294,7 +329,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
       {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
+        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[200] group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
         title="Open AniFlow Assistant"
       >
         <div className="absolute inset-0 bg-blue-600 blur-xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
@@ -303,7 +338,6 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
           <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse"></span>
         </div>
       </button>
-    </div>
+    </>
   );
 };
-
