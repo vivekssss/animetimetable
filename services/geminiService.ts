@@ -1,18 +1,48 @@
 
 import { Anime } from "../types";
 
-export const sendChatMessage = async (message: string, currentSchedule: Anime[] = []) => {
+export interface ChatMessageHistory {
+  sender: 'user' | 'bot';
+  text: string;
+}
+
+export const sendChatMessage = async (
+  message: string,
+  history: ChatMessageHistory[] = [],
+  currentSchedule: Anime[] = []
+) => {
   try {
     const response = await fetch('/api/gemini/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, currentSchedule })
+      body: JSON.stringify({ message, history, currentSchedule })
     });
     const data = await response.json();
-    return data.text || "I couldn't process your message right now. Try again!";
+    return {
+      text: data.text || "I couldn't process your message right now. Try again!",
+      suggestedTitles: data.suggestedTitles || []
+    };
   } catch (error) {
     console.error("Gemini Chat Error:", error);
-    return "I couldn't process your message right now. Please check your signal and try again!";
+    return {
+      text: "I couldn't process your message right now. Please check your signal and try again!",
+      suggestedTitles: []
+    };
+  }
+};
+
+export const getAnimeTrivia = async (category?: string) => {
+  try {
+    const response = await fetch('/api/gemini/trivia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Trivia error:", error);
+    return null;
   }
 };
 

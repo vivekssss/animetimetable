@@ -27,20 +27,76 @@ async function startServer() {
     const { message, history, currentSchedule } = req.body;
     try {
       const scheduleContext = currentSchedule && currentSchedule.length > 0 
-        ? `Current anime schedule context available: ${JSON.stringify(currentSchedule.map((a: any) => ({ title: a.title, score: a.score, studio: a.studio, genres: a.genres, airingTime: a.airingTime, episode: a.episode })))}.`
+        ? `Current live anime schedule context: ${JSON.stringify(currentSchedule.slice(0, 15).map((a: any) => ({ id: a.id, title: a.title, score: a.score, studio: a.studio, genres: a.genres, airingDay: a.airingDay })))}.`
         : '';
-        
+
+      const systemPrompt = `You are AniFlow AI, an enthusiastic, expert anime assistant. ${scheduleContext}
+      You can answer questions about anime plots, character lore, recommendations, voice actors, upcoming releases, streaming platforms, and studio info.
+      Keep answers engaging, helpful, and concise (2-4 paragraphs or markdown bullet points).
+      If you mention specific anime titles in your recommendations or answer, list their exact titles clearly under a line starting with "RECOMMENDED_TITLES: Title 1, Title 2, Title 3" at the very end of your response so the frontend can display interactive anime cards for them.`;
+
+      const contents: any[] = [];
+      if (Array.isArray(history) && history.length > 0) {
+        history.slice(-6).forEach((h: any) => {
+          contents.push({
+            role: h.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: h.text }]
+          });
+        });
+      }
+      contents.push({
+        role: 'user',
+        parts: [{ text: message }]
+      });
+
       const response = await ai.models.generateContent({
         model: 'gemini-3.6-flash',
-        contents: `You are AniFlow AI, an enthusiastic, knowledgeable anime expert assistant. ${scheduleContext}
-        Help the user with anime recommendations, schedule details, plot overviews, character insights, or general otaku knowledge. Keep answers helpful, concise, visually clear, and enthusiastic.
-        
-        User question: "${message}"`,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+        }
       });
-      res.json({ text: response.text });
+
+      const text = response.text || "I couldn't process your question right now.";
+      
+      // Parse RECOMMENDED_TITLES if present
+      let suggestedTitles: string[] = [];
+      if (text.includes("RECOMMENDED_TITLES:")) {
+        const parts = text.split("RECOMMENDED_TITLES:");
+        const cleanText = parts[0].trim();
+        const rawTitles = parts[1].trim();
+        suggestedTitles = rawTitles.split(",").map(t => t.trim().replace(/^["']|["']$/g, '')).filter(Boolean).slice(0, 5);
+        res.json({ text: cleanText, suggestedTitles });
+        return;
+      }
+
+      res.json({ text, suggestedTitles });
     } catch (error) {
       console.error("Gemini Chat Error:", error);
       res.status(500).json({ error: "Failed to generate chat response" });
+    }
+  });
+
+  app.post('/api/gemini/trivia', async (req, res) => {
+    const { category } = req.body;
+    try {
+      const prompt = `Generate a fun, engaging multiple-choice anime trivia question${category ? ` related to ${category}` : ''}.
+      Provide 4 options (A, B, C, D), specify the correct option index (0 for A, 1 for B, 2 for C, 3 for D), and provide a 1-sentence fun fact explanation.
+      Return strictly JSON with keys: "question", "options" (array of 4 strings), "correctIndex" (number 0-3), and "explanation" (string).`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        }
+      });
+
+      const data = JSON.parse(response.text || '{}');
+      res.json(data);
+    } catch (error) {
+      console.error("Trivia Error:", error);
+      res.status(500).json({ error: "Failed to generate trivia" });
     }
   });
 
