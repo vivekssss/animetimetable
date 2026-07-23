@@ -428,8 +428,8 @@ const App: React.FC = () => {
             </header>
 
             {isInitialLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-10 xl:gap-12">
-                {[...Array(6)].map((_, i) => <div key={i} className="aspect-[10/15] bg-white/5 rounded-2xl sm:rounded-[3rem] animate-pulse"></div>)}
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+                {[...Array(8)].map((_, i) => <div key={i} className="aspect-[10/14] bg-white/5 rounded-2xl sm:rounded-[1.5rem] animate-pulse"></div>)}
               </div>
             ) : filteredItems.length > 0 ? (
               <AnimatePresence mode="wait">
@@ -439,15 +439,11 @@ const App: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-10 xl:gap-12"
+                  className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"
                 >
                   {filteredItems.map((anime, index) => (
                     <motion.div
                       key={`${anime.id}-${index}`}
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-                      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.3), ease: [0.25, 0.1, 0.25, 1.0] }}
                       layout
                     >
                       <AnimeCard anime={anime} onClick={setSelectedAnime} />

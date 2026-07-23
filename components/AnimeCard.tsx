@@ -19,15 +19,23 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
   }, [anime.rawAiringTime]);
 
   return (
-    <div className="relative h-full" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative h-full" 
+      onMouseEnter={() => setIsHovered(true)} 
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <motion.div
-        whileHover={{ y: -10, scale: 1.02 }}
+        whileHover={{ y: -8, scale: 1.02 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         onClick={() => onClick(anime)}
         ref={cardRef}
-        className={`group relative flex flex-col bg-slate-900/40 backdrop-blur-2xl rounded-2xl sm:rounded-[2.5rem] overflow-hidden border transition-colors duration-300 cursor-pointer shadow-2xl h-full ${isCurrentlyAiring ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-white/10 hover:border-blue-500/50'}`}
+        className={`group relative flex flex-col bg-slate-900/40 backdrop-blur-2xl rounded-2xl sm:rounded-[1.5rem] overflow-hidden border transition-colors duration-300 cursor-pointer shadow-2xl h-full ${isCurrentlyAiring ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-white/10 hover:border-blue-500/50'}`}
       >
-        <div className="relative aspect-[10/15] overflow-hidden">
+        <div className="relative aspect-[10/14] overflow-hidden">
           <img
             src={anime.image}
             alt={anime.title}
@@ -35,40 +43,41 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out"
           />
 
-          <div className="absolute top-2.5 left-2.5 right-2.5 sm:top-4 sm:left-4 sm:right-4 flex justify-between items-start z-10 gap-1.5 sm:gap-2">
-            <div className="flex flex-col gap-1 sm:gap-2">
+          <div className="absolute top-2.5 left-2.5 right-2.5 sm:top-3 sm:left-3 sm:right-3 flex justify-between items-start z-10 gap-1.5 sm:gap-2">
+            <div className="flex flex-col gap-1 sm:gap-1.5">
               {anime.episode > 0 && (
-                <span className="bg-blue-600 backdrop-blur-xl text-white text-[8px] sm:text-[11px] font-black uppercase tracking-wider sm:tracking-widest px-2 py-1 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl border border-white/20">
+                <span className="bg-blue-600 backdrop-blur-xl text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg shadow-2xl border border-white/20">
                   EP {anime.episode}
                 </span>
               )}
               {isCurrentlyAiring && (
-                <span className="bg-red-500 backdrop-blur-xl text-white text-[7px] sm:text-[9px] font-black uppercase tracking-wider sm:tracking-widest px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl shadow-2xl animate-pulse flex items-center gap-1 sm:gap-2 border border-white/20">
+                <span className="bg-red-500 backdrop-blur-xl text-white text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg shadow-2xl animate-pulse flex items-center gap-1 sm:gap-1.5 border border-white/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                   LIVE
                 </span>
               )}
             </div>
 
-            <span className="bg-black/60 backdrop-blur-xl text-amber-400 text-[9px] sm:text-xs font-black px-2 py-1 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl border border-white/10 flex items-center gap-1 sm:gap-2 shadow-2xl shrink-0">
-              <i className="fa-solid fa-star text-[8px] sm:text-xs"></i> {anime.score > 0 ? anime.score.toFixed(1) : 'NEW'}
+            <span className="bg-black/60 backdrop-blur-xl text-amber-400 text-[9px] sm:text-[11px] font-black px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-white/10 flex items-center gap-1 sm:gap-1.5 shadow-2xl shrink-0">
+              <i className="fa-solid fa-star text-[8px] sm:text-[10px]"></i> {anime.score > 0 ? anime.score.toFixed(1) : 'NEW'}
             </span>
           </div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/60 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-500" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-3.5 sm:p-9">
-            <p className="text-[9px] sm:text-xs font-black text-sky-400 uppercase tracking-[0.15em] sm:tracking-[0.25em] mb-1 sm:mb-3 drop-shadow-md truncate">{anime.studio}</p>
-            <h3 className="text-white text-xs sm:text-2xl font-black font-outfit leading-tight mb-2 sm:mb-5 group-hover:text-blue-200 transition-colors line-clamp-2 drop-shadow-2xl">{anime.title}</h3>
-            <div className="flex items-center text-slate-300 text-[10px] sm:text-[13px] font-bold group-hover:text-white transition-colors uppercase tracking-wider sm:tracking-widest">
-              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center mr-1.5 sm:mr-3 group-hover:bg-blue-500 transition-colors shrink-0">
-                <i className="fa-regular fa-clock text-blue-400 group-hover:text-white text-[8px] sm:text-[10px]"></i>
+          <div className="absolute bottom-0 left-0 right-0 p-3.5 sm:p-5">
+            <p className="text-[9px] sm:text-[10px] font-black text-sky-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-1 sm:mb-2 drop-shadow-md truncate">{anime.studio}</p>
+            <h3 className="text-white text-xs sm:text-lg font-black font-outfit leading-tight mb-2 sm:mb-3 group-hover:text-blue-200 transition-colors line-clamp-2 drop-shadow-2xl">{anime.title}</h3>
+            <div className="flex items-center text-slate-300 text-[10px] sm:text-[11px] font-bold group-hover:text-white transition-colors uppercase tracking-wider">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-1.5 sm:mr-2 group-hover:bg-blue-500 transition-colors shrink-0">
+                <i className="fa-regular fa-clock text-blue-400 group-hover:text-white text-[8px] sm:text-[9px]"></i>
               </div>
               <span className="truncate">{anime.airingTime}</span>
             </div>
           </div>
         </div>
       </motion.div>
+
 
       <AnimatePresence>
         {isHovered && (
@@ -127,7 +136,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 
