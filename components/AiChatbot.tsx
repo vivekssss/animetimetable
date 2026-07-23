@@ -177,7 +177,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-[80px] left-3 right-3 sm:left-6 sm:right-auto sm:bottom-24 w-auto sm:w-[390px] h-[calc(100vh-100px)] max-h-[520px] sm:h-[540px] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col z-[200]"
+            className="fixed bottom-[80px] left-2 right-2 sm:left-6 sm:right-auto sm:bottom-24 w-auto sm:w-[400px] h-[calc(100vh-100px)] max-h-[540px] sm:h-[560px] bg-[#090d16] border border-slate-700/80 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col z-[280]"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-slate-900 border-b border-white/10 p-3 sm:p-4 flex items-center justify-between shrink-0">
@@ -188,7 +188,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xs sm:text-sm font-black text-white leading-tight truncate">AniFlow Assistant</h3>
-                  <p className="text-[8px] sm:text-[10px] text-blue-400 font-extrabold uppercase tracking-wider truncate">AniList API Integration</p>
+                  <p className="text-[8px] sm:text-[10px] text-blue-400 font-extrabold uppercase tracking-wider truncate">AniList Database Integrated</p>
                 </div>
               </div>
 
@@ -211,7 +211,7 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
               </div>
             </div>
 
-            {/* Chat Messages */}
+            {/* Chat Messages Container */}
             <div className="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto overscroll-contain touch-pan-y space-y-3.5 custom-scrollbar bg-slate-950/40">
               {messages.map((msg) => (
                 <div
@@ -225,11 +225,11 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
                         : 'bg-slate-800/90 text-slate-100 border border-slate-700/80 rounded-tl-none font-normal shadow-md'
                     }`}
                   >
-                    <p className="mb-2 leading-snug">{msg.text}</p>
+                    <p className="mb-1.5 leading-snug">{msg.text}</p>
 
                     {/* Render Anime Cards inside Bot Response */}
                     {msg.results && msg.results.length > 0 && (
-                      <div className="mt-2 space-y-2 max-h-[200px] overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar pr-1">
+                      <div className="mt-2 space-y-2 max-h-[220px] overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar pr-1">
                         {msg.results.map((anime) => (
                           <div
                             key={anime.id}
@@ -326,16 +326,17 @@ export const AiChatbot: React.FC<AiChatbotProps> = ({ currentSchedule = [], onSe
         )}
       </AnimatePresence>
 
-      {/* Floating Trigger Button */}
+      {/* Floating Trigger Button (High Visibility Pill Button) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[200] group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
+        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[280] group relative flex items-center justify-center transition-all duration-300 transform active:scale-95"
         title="Open AniFlow Assistant"
       >
-        <div className="absolute inset-0 bg-blue-600 blur-xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
-        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-white/20 text-white group-hover:rotate-6 transition-transform overflow-hidden relative">
-          <i className={`fa-solid ${isOpen ? 'fa-xmark' : 'fa-comments'} text-xl sm:text-2xl`}></i>
-          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse"></span>
+        <div className="absolute inset-0 bg-blue-600 blur-xl opacity-60 group-hover:opacity-90 transition-opacity"></div>
+        <div className="h-12 px-3.5 sm:h-14 sm:px-5 bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 rounded-2xl flex items-center gap-2.5 shadow-2xl border-2 border-white/20 text-white group-hover:scale-105 transition-transform overflow-hidden relative">
+          <i className={`fa-solid ${isOpen ? 'fa-xmark' : 'fa-comments'} text-base sm:text-xl`}></i>
+          <span className="text-xs sm:text-sm font-black tracking-wide uppercase">Assistant</span>
+          <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse border border-slate-900"></span>
         </div>
       </button>
     </>
