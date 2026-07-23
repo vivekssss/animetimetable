@@ -6,11 +6,31 @@ import { Anime } from '../types';
 interface AnimeCardProps {
   anime: Anime;
   onClick: (anime: Anime) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
 }
 
-const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
+const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick, isFavorite = false, onToggleFavorite }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement>(null);
+
+  const countdownText = React.useMemo(() => {
+    if (!anime.rawAiringTime) return anime.airingTime;
+    const now = Math.floor(Date.now() / 1000);
+    const diff = anime.rawAiringTime - now;
+
+    if (diff < 0) {
+      if (Math.abs(diff) < 3600) return "Airing Now";
+      return anime.airingTime;
+    }
+
+    const hours = Math.floor(diff / 3600);
+    const mins = Math.floor((diff % 3600) / 60);
+
+    if (hours > 24) return anime.airingTime;
+    if (hours > 0) return `In ${hours}h ${mins}m`;
+    return `In ${mins}m`;
+  }, [anime.rawAiringTime, anime.airingTime]);
 
   const isCurrentlyAiring = React.useMemo(() => {
     if (!anime.rawAiringTime) return false;
@@ -43,6 +63,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out"
           />
 
+          {/* Top Badges */}
           <div className="absolute top-2.5 left-2.5 right-2.5 sm:top-3 sm:left-3 sm:right-3 flex justify-between items-start z-10 gap-1.5 sm:gap-2">
             <div className="flex flex-col gap-1 sm:gap-1.5">
               {anime.episode > 0 && (
@@ -58,9 +79,22 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
               )}
             </div>
 
-            <span className="bg-black/60 backdrop-blur-xl text-amber-400 text-[9px] sm:text-[11px] font-black px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-white/10 flex items-center gap-1 sm:gap-1.5 shadow-2xl shrink-0">
-              <i className="fa-solid fa-star text-[8px] sm:text-[10px]"></i> {anime.score > 0 ? anime.score.toFixed(1) : 'NEW'}
-            </span>
+            <div className="flex gap-2">
+              {onToggleFavorite && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(e);
+                  }}
+                  className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all ${isFavorite ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'bg-black/40 text-white/70 hover:text-white hover:bg-black/60'} backdrop-blur-xl border border-white/10`}
+                >
+                  <i className={`fa-solid fa-heart text-[10px] sm:text-xs ${isFavorite ? 'animate-bounce' : ''}`}></i>
+                </button>
+              )}
+              <span className="bg-black/60 backdrop-blur-xl text-amber-400 text-[9px] sm:text-[11px] font-black px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-white/10 flex items-center gap-1 sm:gap-1.5 shadow-2xl shrink-0">
+                <i className="fa-solid fa-star text-[8px] sm:text-[10px]"></i> {anime.score > 0 ? anime.score.toFixed(1) : 'NEW'}
+              </span>
+            </div>
           </div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/60 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-500" />
@@ -72,7 +106,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
               <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-1.5 sm:mr-2 group-hover:bg-blue-500 transition-colors shrink-0">
                 <i className="fa-regular fa-clock text-blue-400 group-hover:text-white text-[8px] sm:text-[9px]"></i>
               </div>
-              <span className="truncate">{anime.airingTime}</span>
+              <span className="truncate">{countdownText}</span>
             </div>
           </div>
         </div>

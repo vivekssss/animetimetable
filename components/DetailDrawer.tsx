@@ -5,15 +5,29 @@ import ReactPlayer from 'react-player';
 import { Anime } from '../types';
 import { getAnimeRecommendation, getAiTrailerId } from '../services/geminiService';
 import { fetchAnimeById } from '../services/apiService';
+import { MOCK_ANIME_DATA } from '../constants';
 
 interface DetailDrawerProps {
   anime: Anime | null;
   onClose: () => void;
+  allAnime?: Anime[];
 }
 
-const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClose }) => {
+const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClose, allAnime = MOCK_ANIME_DATA }) => {
   const [anime, setAnime] = React.useState<Anime | null>(initialAnime);
   const [activeTab, setActiveTab] = React.useState<'info' | 'watch'>('info');
+
+  const recommendations = React.useMemo(() => {
+    if (!anime) return [];
+    return allAnime
+      .filter(a => a.id !== anime.id && a.genres.some(g => anime.genres.includes(g)))
+      .sort((a, b) => {
+        const aMatch = a.genres.filter(g => anime.genres.includes(g)).length;
+        const bMatch = b.genres.filter(g => anime.genres.includes(g)).length;
+        return bMatch - aMatch;
+      })
+      .slice(0, 4);
+  }, [anime, allAnime]);
   const [isNavigating, setIsNavigating] = React.useState(false);
   const [aiTrailerId, setAiTrailerId] = React.useState<string | null>(null);
 
@@ -162,6 +176,29 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ anime: initialAnime, onClos
                                     </div>
                                     <p className="text-[10px] sm:text-[11px] font-bold text-slate-200 truncate group-hover:text-blue-400 transition-colors">{rel.title}</p>
                                     <p className="text-[8px] sm:text-[9px] text-slate-500 uppercase mt-0.5 sm:mt-1 tracking-widest">{rel.type}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </section>
+                          )}
+
+                          {recommendations.length > 0 && (
+                            <section>
+                              <h3 className="text-purple-500 font-black text-[10px] uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-3"><span className="w-6 sm:w-8 h-px bg-purple-500/30"></span> Recommended Sector</h3>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                                {recommendations.map(rec => (
+                                  <div key={rec.id} className="group cursor-pointer" onClick={() => handleConnectionClick(rec.id)}>
+                                    <div className="aspect-[10/14] rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 relative mb-2 sm:mb-3 bg-slate-900">
+                                      <img src={rec.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                      <div className="absolute inset-0 bg-purple-600/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <i className="fa-solid fa-play text-white text-xl sm:text-2xl drop-shadow-lg"></i>
+                                      </div>
+                                      <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center z-10">
+                                        <span className="text-amber-400 text-[9px] font-black drop-shadow-lg"><i className="fa-solid fa-star mr-1"></i>{rec.score.toFixed(1)}</span>
+                                      </div>
+                                    </div>
+                                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-200 truncate group-hover:text-purple-400 transition-colors">{rec.title}</p>
+                                    <p className="text-[8px] sm:text-[9px] text-slate-500 uppercase mt-0.5 sm:mt-1 tracking-widest">{rec.studio}</p>
                                   </div>
                                 ))}
                               </div>
