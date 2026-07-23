@@ -18,13 +18,7 @@ const App: React.FC = () => {
   const [airingList, setAiringList] = React.useState<Anime[]>([]);
   const [upcomingList, setUpcomingList] = React.useState<Anime[]>([]);
   const [pastList, setPastList] = React.useState<Anime[]>([]);
-  const [viewMode, setViewMode] = React.useState<'airing' | 'upcoming' | 'watchlist'>('airing');
-  const [watchlist, setWatchlist] = React.useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem('anime_watchlist');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) { return []; }
-  });
+  const [viewMode, setViewMode] = React.useState<'airing' | 'upcoming'>('airing');
   const [selectedDay, setSelectedDay] = React.useState<number>(new Date().getDay());
   const [selectedGenre, setSelectedGenre] = React.useState<string>('All');
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -92,16 +86,6 @@ const App: React.FC = () => {
   }, [weekOffset]);
 
   React.useEffect(() => {
-    localStorage.setItem('anime_watchlist', JSON.stringify(watchlist));
-  }, [watchlist]);
-
-  const toggleWatchlist = (id: number) => {
-    setWatchlist(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
-
-  React.useEffect(() => {
     const delayDebounce = setTimeout(async () => {
       if (searchQuery.length >= 2) {
         setIsSearching(true);
@@ -118,38 +102,18 @@ const App: React.FC = () => {
   }, [searchQuery]);
 
   const filteredItems = React.useMemo(() => {
-    let sourceList: Anime[] = [];
-    if (viewMode === 'watchlist') {
-      // Merge all lists and filter by watchlist IDs
-      const allAnime = [...airingList, ...upcomingList, ...pastList];
-      const seenIds = new Set<number>();
-      sourceList = allAnime.filter(a => {
-        if (watchlist.includes(a.anilistId) && !seenIds.has(a.anilistId)) {
-          seenIds.add(a.anilistId);
-          return true;
-        }
-        return false;
-      });
-    } else {
-      sourceList = viewMode === 'airing' ? airingList : upcomingList;
-    }
-
+    const sourceList = viewMode === 'airing' ? airingList : upcomingList;
     const uniqueMap = new Map<number, Anime>();
     sourceList.forEach(item => {
       if (!uniqueMap.has(item.anilistId)) uniqueMap.set(item.anilistId, item);
     });
     const uniqueList = Array.from(uniqueMap.values());
-
     return uniqueList.filter(anime => {
-      // If we are in watchlist mode, we don't filter by day unless user specifically wants to (keeping it simple for now)
-      const dayMatch = (viewMode === 'airing') ? anime.airingDay === selectedDay : true;
+      const dayMatch = viewMode === 'airing' ? anime.airingDay === selectedDay : true;
       const genreMatch = selectedGenre === 'All' ? true : anime.genres.includes(selectedGenre);
-      const searchMatch = searchQuery.length >= 2 
-        ? anime.title.toLowerCase().includes(searchQuery.toLowerCase()) 
-        : true;
-      return dayMatch && genreMatch && searchMatch;
+      return dayMatch && genreMatch;
     });
-  }, [selectedDay, airingList, upcomingList, pastList, viewMode, selectedGenre, watchlist, searchQuery]);
+  }, [selectedDay, airingList, upcomingList, viewMode, selectedGenre]);
 
   const SidebarMiniSection = ({ title, icon, list, color = 'text-blue-500' }: { title: string, icon: string, list: Anime[], color?: string }) => (
     <div className="bg-white/[0.02] border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 mb-6 sm:mb-8 overflow-hidden">
@@ -258,7 +222,7 @@ const App: React.FC = () => {
               <h1 className="text-base sm:text-lg lg:text-2xl font-black font-outfit text-white tracking-tighter">Ani<span className="text-blue-500">Flow</span></h1>
             </div>
             <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/10 shrink-0">
-              {['airing', 'upcoming', 'watchlist'].map((mode) => (
+              {['airing', 'upcoming'].map((mode) => (
                 <button
                   key={mode}
                   onClick={() => {
@@ -267,10 +231,9 @@ const App: React.FC = () => {
                     setVisibleCount(12);
                     setTimeout(() => setIsFiltering(false), 400);
                   }}
-                  className={`px-2.5 sm:px-4 lg:px-8 py-1.5 sm:py-2 rounded-lg lg:rounded-xl text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase tracking-[0.08em] sm:tracking-[0.1em] transition-all flex items-center gap-1.5 ${viewMode === mode ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}
+                  className={`px-2.5 sm:px-4 lg:px-8 py-1.5 sm:py-2 rounded-lg lg:rounded-xl text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase tracking-[0.08em] sm:tracking-[0.1em] transition-all ${viewMode === mode ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}
                 >
-                  {mode === 'watchlist' && <i className={`fa-solid fa-heart ${viewMode === 'watchlist' ? 'text-white' : 'text-red-500/60'}`}></i>}
-                  {mode === 'airing' ? 'Broadcast' : mode === 'upcoming' ? 'Upcoming' : 'Watchlist'}
+                  {mode === 'airing' ? 'Broadcast' : 'Upcoming'}
                 </button>
               ))}
             </div>
@@ -503,12 +466,7 @@ const App: React.FC = () => {
                       key={`${anime.id}-${index}`}
                       layout
                     >
-                      <AnimeCard 
-                        anime={anime} 
-                        onClick={setSelectedAnime}
-                        isFavorite={watchlist.includes(anime.anilistId)}
-                        onToggleFavorite={() => toggleWatchlist(anime.anilistId)}
-                      />
+                      <AnimeCard anime={anime} onClick={setSelectedAnime} />
                     </motion.div>
                   ))}
                 </motion.div>
@@ -532,11 +490,7 @@ const App: React.FC = () => {
           </aside>
         </div>
       </main >
-      <DetailDrawer 
-        anime={selectedAnime} 
-        onClose={() => setSelectedAnime(null)} 
-        allAnime={[...airingList, ...upcomingList, ...pastList]} 
-      />
+      <DetailDrawer anime={selectedAnime} onClose={() => setSelectedAnime(null)} />
     </div >
   );
 };
